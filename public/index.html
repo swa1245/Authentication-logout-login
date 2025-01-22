@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auth Website</title>
+    <!-- Include Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.7/axios.min.js"></script>
+  </head>
+  <body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen">
+    <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+      <h1 class="text-2xl font-bold mb-4 text-gray-800">Signup</h1>
+      <input
+        type="text"
+        id="signup-username"
+        placeholder="Enter username"
+        class="w-full px-4 py-2 mb-4 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+      />
+      <input
+        type="password"
+        id="signup-password"
+        placeholder="Enter password"
+        class="w-full px-4 py-2 mb-4 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+      />
+      <button
+        onclick="signup()"
+        class="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+      >
+        Signup
+      </button>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md mt-6">
+      <h1 class="text-2xl font-bold mb-4 text-gray-800">Signin</h1>
+      <input
+        type="text"
+        id="signin-username"
+        placeholder="Enter username"
+        class="w-full px-4 py-2 mb-4 border rounded-lg focus:outline-none focus:ring focus:ring-green-300"
+      />
+      <input
+        type="password"
+        id="signin-password"
+        placeholder="Enter password"
+        class="w-full px-4 py-2 mb-4 border rounded-lg focus:outline-none focus:ring focus:ring-green-300"
+      />
+      <button
+        onclick="signin()"
+        class="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600"
+      >
+        Signin
+      </button>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md mt-6">
+      <h1 class="text-2xl font-bold mb-4 text-gray-800">User Information</h1>
+      <div id="inf" class="text-gray-600">No user information available.</div>
+    </div>
+
+    <div class="mt-6">
+      <button
+        onclick="logout()"
+        class="bg-red-500 text-white py-2 px-6 rounded-lg hover:bg-red-600"
+      >
+        Logout
+      </button>
+    </div>
+
+    <script>
+      async function signup() {
+        const username = document.getElementById("signup-username").value;
+        const password = document.getElementById("signup-password").value;
+
+        try {
+          const res = await axios.post("http://localhost:3000/signup", {
+            username,
+            password,
+          });
+          alert("Signup successful!");
+        } catch (error) {
+          alert("Signup failed: " + error.response.data.message);
+        }
+      }
+
+      async function signin() {
+        const username = document.getElementById("signin-username").value;
+        const password = document.getElementById("signin-password").value;
+
+        try {
+          const res = await axios.post("http://localhost:3000/signin", {
+            username,
+            password,
+          });
+          localStorage.setItem("token", res.data.token);
+          alert("Signin successful!");
+          getUserInformation();
+        } catch (error) {
+          alert("Signin failed: " + error.response.data.message);
+        }
+      }
+
+      async function logout() {
+        localStorage.removeItem("token");
+        document.getElementById("inf").innerText = "No user information available.";
+        alert("Logged out successfully.");
+      }
+
+      async function getUserInformation() {
+        const token = localStorage.getItem("token");
+
+        if (token) {
+          try {
+            const response = await axios.get("http://localhost:3000/me", {
+              headers: {
+                Authorization: token,
+              },
+            });
+            document.getElementById("inf").innerText = `Username: ${response.data.username}`;
+          } catch (error) {
+            alert("Failed to fetch user information: " + error.response.data.message);
+            document.getElementById("inf").innerText = "No user information available.";
+          }
+        } else {
+          document.getElementById("inf").innerText = "No user information available.";
+        }
+      }
+
+      // Fetch user information on page load if a token exists
+      getUserInformation();
+    </script>
+  </body>
+</html>
